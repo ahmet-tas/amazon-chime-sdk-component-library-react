@@ -132,6 +132,54 @@ exports.createMeeting = async (event, context, callback) => {
   callback(null, response);
 };
 
+exports.create = async(event, context) => {
+  const query = event.queryStringParameters;
+  if (!query.title || !query.region) {
+    return response(400, 'application/json', JSON.stringify({error: 'Parameters required for create: title, region'}));
+  }
+
+  // Look up the meeting by its title. If it does not exist, create the meeting.
+  let meeting = await getMeeting(query.title);
+  if (!meeting) {
+    const request = {
+      // Use a UUID for the client request token to ensure that any request retries
+      // do not create multiple meetings.
+      ClientRequestToken: uuidv4(),
+
+      // Specify the media region (where the meeting is hosted).
+      // In this case, we use the region selected by the user.
+      MediaRegion: query.region,
+
+      // Set up SQS notifications if being used
+      NotificationsConfiguration: USE_EVENT_BRIDGE === 'false' ? { SqsQueueArn: SQS_QUEUE_ARN } : {},
+
+      // Any meeting ID you wish to associate with the meeting.
+      // For simplicity here, we use the meeting title.
+      ExternalMeetingId: query.title.substring(0, 64),
+
+      // Tags associated with the meeting. They can be used in cost allocation console
+      Tags: [
+        { Key: 'Department', Value: 'RND'},
+        { Key: 'InviatationCode', Value: ExternalMeetingId}
+      ]
+    };
+
+    console.info('Creating new meeting: ' + JSON.stringify(request));
+    meeting = await chime.createMeeting(request).promise();
+
+    // Store the meeting in the table using the meeting title as the key.
+    await putMeeting(query.title, meeting);
+  };
+
+  // Return the meeting response. The client will use these
+  // to join the meeting.
+  return response(201, 'application/json', JSON.stringify({
+    JoinInfo: {
+      Meeting: meeting.Meeting
+    },
+  }, null, 2));
+}
+
 exports.join = async (event, context, callback) => {
   var response = {
     "statusCode": 200,
@@ -190,9 +238,12 @@ exports.end = async (event, context, callback) => {
   };
   const title = event.queryStringParameters.title;
   let meetingInfo = await getMeeting(title);
-  await chime.deleteMeeting({
-    MeetingId: meetingInfo.Meeting.MeetingId,
-  }).promise();
+
+  if (meetingInfo){
+    await chime.deleteMeeting({
+      MeetingId: meetingInfo.Meeting.MeetingId,
+    }).promise();
+  }
   callback(null, response);
 };
 

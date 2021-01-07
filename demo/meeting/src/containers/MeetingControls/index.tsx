@@ -17,10 +17,31 @@ import EndMeetingControl from '../EndMeetingControl';
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
 
-const MeetingControls = () => {
+
+const ControlsByType = {
+ moderator: [
+  <AudioInputControl />,
+  <VideoInputControl />,
+  <ContentShareControl />,
+  <AudioOutputControl />,
+  <EndMeetingControl />
+ ],
+ attendee: [
+  <AudioInputControl />,
+  <VideoInputControl />,
+  <AudioOutputControl />
+ ],
+ chat: [
+  <AudioInputControl />,
+  <VideoInputControl />,
+  <AudioOutputControl />
+ ]
+};
+
+const MeetingControls = (props : any) => {
   const { toggleNavbar, closeRoster, showRoster } = useNavigation();
   const { isUserActive } = useUserActivityState();
-
+  const  type: 'moderator' | 'attendee' | 'chat'  = props.type;
   const handleToggle = () => {
     if (showRoster) {
       closeRoster();
@@ -42,11 +63,17 @@ const MeetingControls = () => {
           onClick={handleToggle}
           label="Menu"
         />
-        <AudioInputControl />
-        <VideoInputControl />
-        <ContentShareControl />
-        <AudioOutputControl />
-        <EndMeetingControl />
+        {type ? 
+          ControlsByType[type] 
+        :
+        <>
+          <AudioInputControl />
+          <VideoInputControl />
+          <ContentShareControl />
+          <AudioOutputControl />
+          <EndMeetingControl />
+        </>
+        }
       </ControlBar>
     </StyledControls>
   );

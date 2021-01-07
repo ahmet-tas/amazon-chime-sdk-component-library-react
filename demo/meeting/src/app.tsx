@@ -18,7 +18,7 @@ import routes from './constants/routes';
 import { NavigationProvider } from './providers/NavigationProvider';
 import { Meeting, Home, DeviceSetup } from './views';
 import Notifications from './containers/Notifications';
-import NoMeetingRedirect from './containers/NoMeetingRedirect';
+// import NoMeetingRedirect from './containers/NoMeetingRedirect';
 import meetingConfig from './meetingConfig';
 
 const App: FC = () => (
@@ -33,14 +33,14 @@ const App: FC = () => (
                 <Switch>
                   <Route exact path={routes.HOME} component={Home} />
                   <Route path={routes.DEVICE}>
-                    <NoMeetingRedirect>
+                    {/* <NoMeetingRedirect> */}
                       <DeviceSetup />
-                    </NoMeetingRedirect>
+                    {/* </NoMeetingRedirect> */}
                   </Route>
                   <Route path={routes.MEETING}>
-                    <NoMeetingRedirect>
+                    {/* <NoMeetingRedirect> */}
                       <Meeting />
-                    </NoMeetingRedirect>
+                    {/* </NoMeetingRedirect> */}
                   </Route>
                 </Switch>
               </NavigationProvider>
