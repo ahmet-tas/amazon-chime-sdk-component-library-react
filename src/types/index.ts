@@ -29,6 +29,7 @@ export type LocalVideoContextType = {
   tileId: null | number;
   isVideoEnabled: boolean;
   toggleVideo: () => Promise<void>;
+  audioVideo: any;
 };
 
 export type ContentShareControlContextType = {

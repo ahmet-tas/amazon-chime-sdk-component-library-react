@@ -18,6 +18,7 @@ import useMeetingEndRedirect from '../../hooks/useMeetingEndRedirect';
 import MeetingMetrics from '../../containers/MeetingMetrics';
 import { fetchMeeting, createGetAttendeeCallback } from '../../utils/api';
 import { useAppState } from '../../providers/AppStateProvider';
+import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscribeProvider';
 
 
 const DirectMeeting = () => {
@@ -27,7 +28,7 @@ const DirectMeeting = () => {
   let history = useHistory();
   const meetingManager = useMeetingManager();
   useMeetingEndRedirect();
-  const { showNavbar, showRoster } = useNavigation();
+  const { showNavbar, showRoster, showChat } = useNavigation();
 
   function getQueryVariable(variable: string) {
     var query = history.location.search.substring(1);
@@ -40,7 +41,7 @@ const DirectMeeting = () => {
   }
   
   console.log('getQueryVariable type', getQueryVariable('t'))
-  
+
   useEffect(() => {
     fetchData();
   }, [])
@@ -66,7 +67,7 @@ const DirectMeeting = () => {
   const fetchData = async () => {
     const region = await getNearestRegion();
     const id = getQueryVariable('m');
-    const attendeeName = getQueryVariable('n');
+    const attendeeName = decodeURIComponent(getQueryVariable('n'));
     await setAppMeetingInfo(id, attendeeName, region);
     meetingManager.getAttendee = createGetAttendeeCallback(id);
     try {
@@ -83,7 +84,8 @@ const DirectMeeting = () => {
 
   return (
     <UserActivityProvider>
-      <StyledLayout showNav={showNavbar} showRoster={showRoster}>
+      <StyledLayout showNav={showNavbar} showRoster={showRoster || showChat}>
+      <RealitimeSubscribeStateProvider>
         <StyledContent>
           <MeetingMetrics />
           <VideoTileGrid
@@ -93,6 +95,7 @@ const DirectMeeting = () => {
           <MeetingControls type={getQueryVariable('t')} />
         </StyledContent>
         <NavigationControl />
+        </RealitimeSubscribeStateProvider>
       </StyledLayout>
     </UserActivityProvider>
   );

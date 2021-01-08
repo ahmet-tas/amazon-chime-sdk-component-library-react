@@ -1,7 +1,7 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { ControlBarButton } from '../../ui/ControlBar/ControlBarItem';
 import { Camera } from '../../ui/icons';
@@ -15,15 +15,16 @@ import useSelectVideoInputDevice from '../../../hooks/sdk/useSelectVideoInputDev
 interface Props {
   /** The label that will be shown for video input control, it defaults to `Video`. */
   label?: string;
+  onByDefault?: boolean;
 }
 
 const videoInputConfig: DeviceConfig = {
   additionalDevices: true
 };
 
-const VideoInputControl: React.FC<Props> = ({ label = 'Video' }) => {
+const VideoInputControl: React.FC<Props> = ({ label = 'Video', onByDefault = false }) => {
   const { devices, selectedDevice } = useVideoInputs(videoInputConfig);
-  const { isVideoEnabled, toggleVideo } = useLocalVideo();
+  const { isVideoEnabled, toggleVideo, audioVideo } = useLocalVideo();
   const selectDevice = useSelectVideoInputDevice();
 
   const dropdownOptions: PopOverItemProps[] = devices.map((device: any) => ({
@@ -31,6 +32,12 @@ const VideoInputControl: React.FC<Props> = ({ label = 'Video' }) => {
     checked: isOptionActive(selectedDevice, device.deviceId),
     onClick: () => selectDevice(device.deviceId)
   }));
+
+  useEffect(() => {
+    if (audioVideo && onByDefault) {
+      toggleVideo();
+    }
+  }, [audioVideo]);
 
   return (
     <ControlBarButton

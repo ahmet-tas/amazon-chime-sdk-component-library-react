@@ -22,8 +22,7 @@
     "build:prod": "webpack --config ./webpack.config.js --mode=production --devtool=false",
     "start:client": "npm install && webpack-dev-server",
     "start:backend": "node server.js",
-    "start": "concurrently \"npm run start:client\" \"npm run start:backend\"",
-    "deploy": "npm install && node ./serverless/deploy.js"
+    "start": "concurrently \"npm run start:client\" \"npm run start:backend\""
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",

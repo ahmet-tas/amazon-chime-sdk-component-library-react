@@ -1,7 +1,7 @@
 // Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { ControlBarButton } from '../../ui/ControlBar/ControlBarItem';
 import { Microphone } from '../../ui/icons';
@@ -17,14 +17,16 @@ interface Props {
   muteLabel?: string;
   /** The label that will be shown when microphone is unmuted, it defaults to `Unmute`. */
   unmuteLabel?: string;
+  defaultMuted?: boolean;
 }
 
 const AudioInputControl: React.FC<Props> = ({
   muteLabel = 'Mute',
-  unmuteLabel = 'Unmute'
+  unmuteLabel = 'Unmute',
+  defaultMuted = false
 }) => {
   const meetingManager = useMeetingManager();
-  const { muted, toggleMute } = useToggleLocalMute();
+  const { muted, toggleMute, audioVideo } = useToggleLocalMute();
   const audioInputConfig: DeviceConfig = {
     additionalDevices: true
   };
@@ -36,6 +38,12 @@ const AudioInputControl: React.FC<Props> = ({
     onClick: (): Promise<void> =>
       meetingManager.selectAudioInputDevice(device.deviceId)
   }));
+
+  useEffect(() => {
+    if (audioVideo && defaultMuted) {
+      toggleMute();
+    }
+  }, [audioVideo]);
 
   return (
     <ControlBarButton

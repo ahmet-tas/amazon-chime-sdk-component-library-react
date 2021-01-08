@@ -32,7 +32,7 @@ export function useToggleLocalMute() {
     }
   }, [muted, audioVideo]);
 
-  return { muted, toggleMute };
+  return { muted, toggleMute, audioVideo };
 }
 
 export default useToggleLocalMute;

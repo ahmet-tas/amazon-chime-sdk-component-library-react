@@ -19,32 +19,36 @@ import { StyledControls } from './Styled';
 
 
 const ControlsByType = {
- moderator: [
-  <AudioInputControl />,
-  <VideoInputControl />,
-  <ContentShareControl />,
-  <AudioOutputControl />,
-  <EndMeetingControl />
- ],
- attendee: [
-  <AudioInputControl />,
-  <VideoInputControl />,
-  <AudioOutputControl />
- ],
- chat: [
-  <AudioInputControl />,
-  <VideoInputControl />,
-  <AudioOutputControl />
- ]
+ moderator: <>
+      <AudioInputControl/>
+      <VideoInputControl onByDefault={true} />
+      <ContentShareControl />
+      <AudioOutputControl />
+      <EndMeetingControl />
+    </>,
+ attendee: <>
+      <AudioInputControl defaultMuted={true} />
+      <VideoInputControl onByDefault={false} />
+      <AudioOutputControl />
+    </>,
+ chat: <>
+      <AudioInputControl />
+      <AudioOutputControl />
+      <VideoInputControl onByDefault={true} />
+    </>
 };
 
 const MeetingControls = (props : any) => {
-  const { toggleNavbar, closeRoster, showRoster } = useNavigation();
+  const { toggleNavbar, closeRoster, showRoster, showChat, closeChat } = useNavigation();
   const { isUserActive } = useUserActivityState();
   const  type: 'moderator' | 'attendee' | 'chat'  = props.type;
   const handleToggle = () => {
     if (showRoster) {
       closeRoster();
+    }
+
+    if (showChat){
+      closeChat();
     }
 
     toggleNavbar();
@@ -66,13 +70,7 @@ const MeetingControls = (props : any) => {
         {type ? 
           ControlsByType[type] 
         :
-        <>
-          <AudioInputControl />
-          <VideoInputControl />
-          <ContentShareControl />
-          <AudioOutputControl />
-          <EndMeetingControl />
-        </>
+          ControlsByType["moderator"]
         }
       </ControlBar>
     </StyledControls>

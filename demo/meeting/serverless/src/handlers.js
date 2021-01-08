@@ -132,10 +132,19 @@ exports.createMeeting = async (event, context, callback) => {
   callback(null, response);
 };
 
-exports.create = async(event, context) => {
+exports.create = async(event, context, callback) => {
+  var response = {
+    "statusCode": 200,
+    "headers": {},
+    "body": '',
+    "isBase64Encoded": false
+  };
+
   const query = event.queryStringParameters;
   if (!query.title || !query.region) {
-    return response(400, 'application/json', JSON.stringify({error: 'Parameters required for create: title, region'}));
+    response.statusCode = 400;
+    response.body = JSON.stringify({error: 'Parameters required for create: title, region'});
+    callback(null, response);
   }
 
   // Look up the meeting by its title. If it does not exist, create the meeting.
@@ -144,40 +153,41 @@ exports.create = async(event, context) => {
     const request = {
       // Use a UUID for the client request token to ensure that any request retries
       // do not create multiple meetings.
-      ClientRequestToken: uuidv4(),
+      ClientRequestToken: uuid(),
 
       // Specify the media region (where the meeting is hosted).
       // In this case, we use the region selected by the user.
       MediaRegion: query.region,
 
       // Set up SQS notifications if being used
-      NotificationsConfiguration: USE_EVENT_BRIDGE === 'false' ? { SqsQueueArn: SQS_QUEUE_ARN } : {},
+      NotificationsConfiguration: getNotificationsConfig(),
 
-      // Any meeting ID you wish to associate with the meeting.
-      // For simplicity here, we use the meeting title.
-      ExternalMeetingId: query.title.substring(0, 64),
+      //ExternalMeetingId: query.title,
 
       // Tags associated with the meeting. They can be used in cost allocation console
-      Tags: [
-        { Key: 'Department', Value: 'RND'},
-        { Key: 'InviatationCode', Value: ExternalMeetingId}
-      ]
+/*        Tags: [
+        { Key: 'invitationCode', Value: query.title},
+      ] */
     };
 
     console.info('Creating new meeting: ' + JSON.stringify(request));
     meeting = await chime.createMeeting(request).promise();
 
+    console.info("successfully created  meeting", meeting);
+    
     // Store the meeting in the table using the meeting title as the key.
     await putMeeting(query.title, meeting);
   };
 
   // Return the meeting response. The client will use these
   // to join the meeting.
-  return response(201, 'application/json', JSON.stringify({
+  response.statusCode = 201;
+  response.body = JSON.stringify({
     JoinInfo: {
       Meeting: meeting.Meeting
     },
-  }, null, 2));
+  }, null, 2);
+  callback(null, response);
 }
 
 exports.join = async (event, context, callback) => {
