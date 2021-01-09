@@ -8,17 +8,16 @@ import {
   NavbarHeader,
   NavbarItem,
   Attendees,
-  Eye,
   Chat,
   Information
 } from 'amazon-chime-sdk-component-library-react';
 
 import { useNavigation } from '../../providers/NavigationProvider';
-import { useAppState } from '../../providers/AppStateProvider';
+//import { useAppState } from '../../providers/AppStateProvider';
 
 const Navigation = () => {
   const { toggleRoster, toggleMetrics, closeNavbar, toggleChat } = useNavigation();
-  const { theme, toggleTheme } = useAppState();
+  //const { theme } = useAppState();
 
   return (
     <Navbar className="nav" flexDirection="column" container>
@@ -26,17 +25,12 @@ const Navigation = () => {
       <NavbarItem
         icon={<Chat />}
         onClick={toggleChat}
-        label={theme === 'light' ? 'Dark mode' : 'Light mode'}
+        label={'Chat'}
       />
       <NavbarItem
         icon={<Attendees />}
         onClick={toggleRoster}
         label="Attendees"
-      />
-      <NavbarItem
-        icon={<Eye />}
-        onClick={toggleTheme}
-        label={theme === 'light' ? 'Dark mode' : 'Light mode'}
       />
       <NavbarItem
         icon={<Information />}

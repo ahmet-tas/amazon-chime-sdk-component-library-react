@@ -22,13 +22,17 @@ import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscri
 
 
 const DirectMeeting = () => {
-  const {
-    setAppMeetingInfo,
-  } = useAppState();
+  const { setAppMeetingInfo } = useAppState();
+
   let history = useHistory();
+
   const meetingManager = useMeetingManager();
+  
   useMeetingEndRedirect();
-  const { showNavbar, showRoster, showChat } = useNavigation();
+  
+  const { showNavbar, showRoster, showChat, toggleRoster } = useNavigation();
+
+
 
   function getQueryVariable(variable: string) {
     var query = history.location.search.substring(1);
@@ -40,9 +44,9 @@ const DirectMeeting = () => {
     return('');
   }
   
-  console.log('getQueryVariable type', getQueryVariable('t'))
-
   useEffect(() => {
+    toggleRoster();
+
     fetchData();
   }, [])
 

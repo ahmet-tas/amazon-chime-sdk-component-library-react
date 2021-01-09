@@ -13,7 +13,7 @@ import {
   Dots
 } from 'amazon-chime-sdk-component-library-react';
 
-import EndMeetingControl from '../EndMeetingControl';
+/* import EndMeetingControl from '../EndMeetingControl'; */
 import { useNavigation } from '../../providers/NavigationProvider';
 import { StyledControls } from './Styled';
 
@@ -24,7 +24,7 @@ const ControlsByType = {
       <VideoInputControl onByDefault={true} />
       <ContentShareControl />
       <AudioOutputControl />
-      <EndMeetingControl />
+      {/* <EndMeetingControl /> */}
     </>,
  attendee: <>
       <AudioInputControl defaultMuted={true} />

@@ -12,7 +12,7 @@ interface AppStateValue {
   localUserName: string;
   theme: string;
   region: string;
-  toggleTheme: () => void;
+  //toggleTheme: () => void;
   setAppMeetingInfo: (meetingId: string, name: string, region: string) => void;
 }
 
@@ -34,12 +34,13 @@ export function AppStateProvider({ children }: Props) {
   const [meetingId, setMeeting] = useState(query.get('meetingId') || '');
   const [region, setRegion] = useState(query.get('region') || '');
   const [localUserName, setLocalName] = useState('');
-  const [theme, setTheme] = useState(() => {
-    const storedTheme = localStorage.getItem('theme');
-    return storedTheme || 'light';
+  const [theme, /* setTheme */] = useState(() => {
+    //const storedTheme = localStorage.getItem('theme');
+    //return storedTheme || 'light';
+    return 'dark';
   });
 
-  const toggleTheme = (): void => {
+/*   const toggleTheme = (): void => {
     if (theme === 'light') {
       setTheme('dark');
       localStorage.setItem('theme', 'dark');
@@ -47,7 +48,7 @@ export function AppStateProvider({ children }: Props) {
       setTheme('light');
       localStorage.setItem('theme', 'light');
     }
-  };
+  }; */
 
   const setAppMeetingInfo = (
     meetingId: string,
@@ -64,7 +65,7 @@ export function AppStateProvider({ children }: Props) {
     localUserName,
     theme,
     region,
-    toggleTheme,
+    //toggleTheme,
     setAppMeetingInfo
   };
 
