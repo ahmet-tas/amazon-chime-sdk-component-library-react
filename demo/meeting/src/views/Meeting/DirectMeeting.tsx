@@ -5,10 +5,10 @@ import React, { useEffect } from 'react';
 import {
   VideoTileGrid,
   UserActivityProvider,
-  useMeetingManager
+  useMeetingManager,
 } from 'amazon-chime-sdk-component-library-react';
 // import { useAppState } from '../../providers/AppStateProvider';
-import { useHistory } from 'react-router-dom'
+import { useHistory } from 'react-router-dom';
 import { StyledLayout, StyledContent } from './Styled';
 import NavigationControl from '../../containers/Navigation/NavigationControl';
 import { useNavigation } from '../../providers/NavigationProvider';
@@ -16,89 +16,70 @@ import MeetingDetails from '../../containers/MeetingDetails';
 import MeetingControls from '../../containers/MeetingControls';
 import useMeetingEndRedirect from '../../hooks/useMeetingEndRedirect';
 import MeetingMetrics from '../../containers/MeetingMetrics';
-import { fetchMeeting, createGetAttendeeCallback } from '../../utils/api';
+import {
+  fetchMeeting,
+  createGetAttendeeCallback,
+  getQueryVariable,
+  getNearestRegion,
+} from '../../utils/api';
 import { useAppState } from '../../providers/AppStateProvider';
 import { RealitimeSubscribeStateProvider } from '../../providers/RealtimeSubscribeProvider';
 
-
 const DirectMeeting = () => {
-  const { setAppMeetingInfo } = useAppState();
+  const { setAppMeetingInfo, meetingId } = useAppState();
 
-  let history = useHistory();
+  const history = useHistory();
 
   const meetingManager = useMeetingManager();
-  
+
   useMeetingEndRedirect();
-  
+
   const { showNavbar, showRoster, showChat, toggleRoster } = useNavigation();
 
-
-
-  function getQueryVariable(variable: string) {
-    var query = history.location.search.substring(1);
-    var vars = query.split("&");
-    for (var i=0;i<vars.length;i++) {
-      var pair = vars[i].split("=");
-      if(pair[0] == variable){return pair[1];}
-    }
-    return('');
-  }
-  
-  useEffect(() => {
-    toggleRoster();
-
-    fetchData();
-  }, [])
-
-  const getNearestRegion = async () => {
-
-    try {
-      const res = await fetch(`https://nearest-media-region.l.chime.aws`, {
-        method: 'GET'
-      });
-
-      if (!res.ok) {
-        throw new Error('Server error');
-      }
-
-      const data = await res.json();
-      return data.region;
-    } catch (e) {
-      console.error('Could not fetch nearest region: ', e.message);
-    }
-  }
-
-  const fetchData = async () => {
+  const fetchData = React.useCallback(async (): Promise<void> => {
     const region = await getNearestRegion();
-    const id = getQueryVariable('m');
-    const attendeeName = decodeURIComponent(getQueryVariable('n'));
-    await setAppMeetingInfo(id, attendeeName, region);
+    const id = getQueryVariable('m', history.location);
+    const attendeeName = decodeURIComponent(
+      getQueryVariable('n', history.location)
+    );
+    setAppMeetingInfo(id, attendeeName, region);
     meetingManager.getAttendee = createGetAttendeeCallback(id);
     try {
       const { JoinInfo } = await fetchMeeting(id, attendeeName, region);
       await meetingManager.join({
         meetingInfo: JoinInfo.Meeting,
-        attendeeInfo: JoinInfo.Attendee
+        attendeeInfo: JoinInfo.Attendee,
       });
       await meetingManager.start();
-    } catch (error) {
-    
-    }
-  }
+    } catch (error) {}
+  }, [history.location, meetingManager, setAppMeetingInfo]);
+
+  useEffect(() => {
+    toggleRoster();
+
+    fetchData();
+  }, []);
 
   return (
     <UserActivityProvider>
       <StyledLayout showNav={showNavbar} showRoster={showRoster || showChat}>
-      <RealitimeSubscribeStateProvider>
-        <StyledContent>
-          <MeetingMetrics />
-          <VideoTileGrid
-            className="videos"
-            noRemoteVideoView={<MeetingDetails />}
-          />
-          <MeetingControls type={getQueryVariable('t')} />
-        </StyledContent>
-        <NavigationControl />
+        <RealitimeSubscribeStateProvider>
+          <StyledContent>
+            <MeetingMetrics />
+            <VideoTileGrid
+              className="videos"
+              noRemoteVideoView={
+                <MeetingDetails
+                  type={getQueryVariable('t', history.location)}
+                />
+              }
+            />
+            <MeetingControls
+              type={getQueryVariable('t', history.location)}
+              meetingId={meetingId}
+            />
+          </StyledContent>
+          <NavigationControl />
         </RealitimeSubscribeStateProvider>
       </StyledLayout>
     </UserActivityProvider>

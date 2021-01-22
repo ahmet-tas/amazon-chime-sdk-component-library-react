@@ -36,6 +36,36 @@ export async function fetchMeeting(
   return data;
 }
 
+export async function getNearestRegion(): Promise<string> {
+  try {
+    const res = await fetch(`https://nearest-media-region.l.chime.aws`, {
+      method: 'GET',
+    });
+
+    if (!res.ok) {
+      throw new Error('Server error');
+    }
+
+    const data = await res.json();
+    return data.region;
+  } catch (e) {
+    console.error('Could not fetch nearest region: ', e.message);
+    throw new Error(e);
+  }
+}
+
+export function getQueryVariable(variable: string, location: any): string {
+  const query = location.search.substring(1);
+  const vars = query.split('&');
+  for (let i = 0; i < vars.length; i++) {
+    const pair = vars[i].split('=');
+    if (pair[0] === variable) {
+      return pair[1];
+    }
+  }
+  return '';
+}
+
 export function createGetAttendeeCallback(meetingId: string) {
   return async (chimeAttendeeId: string, externalUserId?: string) => {
     const attendeeUrl = `${BASE_URL}attendee?title=${encodeURIComponent(
