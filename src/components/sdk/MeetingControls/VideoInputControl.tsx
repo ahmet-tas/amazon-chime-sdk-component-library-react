@@ -7,6 +7,7 @@ import { ControlBarButton } from '../../ui/ControlBar/ControlBarItem';
 import { Camera } from '../../ui/icons';
 import { useVideoInputs } from '../../../providers/DevicesProvider';
 import { useLocalVideo } from '../../../providers/LocalVideoProvider';
+import { useAudioVideo } from '../../../providers/AudioVideoProvider';
 import { DeviceConfig } from '../../../types';
 import { isOptionActive } from '../../../utils/device-utils';
 import { PopOverItemProps } from '../../ui/PopOver/PopOverItem';
@@ -24,7 +25,8 @@ const videoInputConfig: DeviceConfig = {
 
 const VideoInputControl: React.FC<Props> = ({ label = 'Video', onByDefault = false }) => {
   const { devices, selectedDevice } = useVideoInputs(videoInputConfig);
-  const { isVideoEnabled, toggleVideo, audioVideo } = useLocalVideo();
+  const { isVideoEnabled, toggleVideo } = useLocalVideo();
+  const audioVideo = useAudioVideo();
   const selectDevice = useSelectVideoInputDevice();
 
   const dropdownOptions: PopOverItemProps[] = devices.map((device: any) => ({

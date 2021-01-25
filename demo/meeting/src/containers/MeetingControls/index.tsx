@@ -13,6 +13,9 @@ import {
   useUserActivityState,
   Dots,
   useAudioVideo,
+  useNotificationDispatch,
+  Severity,
+  ActionType,
 } from 'amazon-chime-sdk-component-library-react';
 
 import { DataMessage } from 'amazon-chime-sdk-js';
@@ -66,6 +69,8 @@ const MeetingControls: React.FC<Props> = ({ type, meetingId = null }) => {
   const { isUserActive } = useUserActivityState();
   const audioVideo = useAudioVideo();
   const { isVideoEnabled, toggleVideo } = useLocalVideo();
+  const dispatch = useNotificationDispatch();
+
   const handleToggle = (): void => {
     if (showRoster) {
       closeRoster();
@@ -78,13 +83,28 @@ const MeetingControls: React.FC<Props> = ({ type, meetingId = null }) => {
     toggleNavbar();
   };
 
-  const onMuteEvent = React.useCallback(
+  const showMutedNotification = React.useCallback((): void => {
+    const notificationPayload = {
+      severity: Severity.INFO,
+      message: 'You were muted by the moderator',
+      autoClose: true,
+      autoCloseDelay: 5000,
+    };
+
+    dispatch({
+      type: ActionType.ADD,
+      payload: notificationPayload,
+    });
+  }, [dispatch]);
+
+  const handleMuteEvent = React.useCallback(
     (eventData: DataMessage): void => {
       const data = JSON.parse(eventData.text());
       console.log('data', data);
       const muted = audioVideo?.realtimeIsLocalAudioMuted() || false;
       // const videoEnabled = audioVideo?.hasStartedLocalVideoTile() || false;
       if (meetingId && data.meetingId === meetingId) {
+        const alreadyMuted = !muted && !isVideoEnabled;
         if (!muted) {
           audioVideo?.realtimeMuteLocalAudio();
         }
@@ -92,22 +112,26 @@ const MeetingControls: React.FC<Props> = ({ type, meetingId = null }) => {
         if (isVideoEnabled) {
           toggleVideo();
         }
+
+        if (!alreadyMuted) {
+          showMutedNotification();
+        }
       }
     },
-    [audioVideo, isVideoEnabled, meetingId, toggleVideo]
+    [audioVideo, isVideoEnabled, meetingId, toggleVideo, showMutedNotification]
   );
 
   useEffect(() => {
     if (type && type !== 'moderator' && audioVideo) {
       audioVideo?.realtimeSubscribeToReceiveDataMessage(
         'MUTE_ALL',
-        onMuteEvent
+        handleMuteEvent
       );
     }
     return (): void => {
       audioVideo?.realtimeUnsubscribeFromReceiveDataMessage('MUTE_ALL');
     };
-  }, [type, audioVideo, onMuteEvent]);
+  }, [type, audioVideo, handleMuteEvent]);
 
   return (
     <StyledControls className="controls" active={!!isUserActive}>
