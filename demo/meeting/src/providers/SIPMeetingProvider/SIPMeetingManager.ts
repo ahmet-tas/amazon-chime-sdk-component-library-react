@@ -20,6 +20,7 @@ export class SIPMeetingManager {
     try {
       this.meetingData = await fetchMeeting(
         meetingId,
+        '',
         AMAZON_CHIME_VOICE_CONNECTOR_PHONE_NUMDER,
         this.region
       );

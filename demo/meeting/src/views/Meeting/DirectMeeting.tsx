@@ -46,13 +46,14 @@ const DirectMeeting = () => {
   const fetchData = React.useCallback(async (): Promise<void> => {
     const region = await getNearestRegion();
     const id = getQueryVariable('m', history.location);
+    const externalUserId = getQueryVariable('u', history.location);
     const attendeeName = decodeURIComponent(
       getQueryVariable('n', history.location)
     );
     setAppMeetingInfo(id, attendeeName, region);
-    meetingManager.getAttendee = createGetAttendeeCallback(id);
+    meetingManager.getAttendee = createGetAttendeeCallback(id, externalUserId);
     try {
-      const { JoinInfo } = await fetchMeeting(id, attendeeName, region);
+      const { JoinInfo } = await fetchMeeting(id, externalUserId, attendeeName, region);
       await meetingManager.join({
         meetingInfo: JoinInfo.Meeting,
         attendeeInfo: JoinInfo.Attendee,

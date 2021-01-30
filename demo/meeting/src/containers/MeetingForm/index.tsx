@@ -59,10 +59,10 @@ const MeetingForm: React.FC = () => {
     }
 
     setIsLoading(true);
-    meetingManager.getAttendee = createGetAttendeeCallback(id);
+    meetingManager.getAttendee = createGetAttendeeCallback(id, '');
 
     try {
-      const { JoinInfo } = await fetchMeeting(id, attendeeName, region);
+      const { JoinInfo } = await fetchMeeting(id, '', attendeeName, region);
 
       await meetingManager.join({
         meetingInfo: JoinInfo.Meeting,

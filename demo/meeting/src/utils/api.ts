@@ -14,12 +14,15 @@ interface MeetingResponse {
 
 export async function fetchMeeting(
   meetingId: string,
+  externalUserId: string,
   name: string,
   region: string
 ): Promise<MeetingResponse> {
   const response = await fetch(
     `${BASE_URL}join?title=${encodeURIComponent(
       meetingId
+    )}&externalUserId=${encodeURIComponent(
+      externalUserId
     )}&name=${encodeURIComponent(name)}${
       region ? `&region=${encodeURIComponent(region)}` : ''
     }`,
@@ -66,11 +69,9 @@ export function getQueryVariable(variable: string, location: any): string {
   return '';
 }
 
-export function createGetAttendeeCallback(meetingId: string) {
+export function createGetAttendeeCallback(meetingId: string, userId: string) {
   return async (chimeAttendeeId: string, externalUserId?: string) => {
-    const attendeeUrl = `${BASE_URL}attendee?title=${encodeURIComponent(
-      meetingId
-    )}&attendee=${encodeURIComponent(chimeAttendeeId)}`;
+    const attendeeUrl = `${BASE_URL}attendee?title=${encodeURIComponent(meetingId)}&attendee=${encodeURIComponent(chimeAttendeeId)}&externalUserId=${encodeURIComponent(userId)}`;
     const res = await fetch(attendeeUrl, {
       method: 'GET'
     });

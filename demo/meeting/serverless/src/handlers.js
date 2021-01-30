@@ -101,6 +101,7 @@ exports.createMeeting = async (event, context, callback) => {
   };
   const title = event.queryStringParameters.title;
   const region = event.queryStringParameters.region || 'us-east-1';
+  const externalUserId = event.queryStringParameters.externalUserId || 'NO_EXTERNAL_USER_ID';
 
   if (!title) {
     response["statusCode"] = 400;
@@ -115,6 +116,12 @@ exports.createMeeting = async (event, context, callback) => {
       ClientRequestToken: uuid(),
       MediaRegion: region,
       NotificationsConfiguration: getNotificationsConfig(),
+      ExternalMeetingId: externalUserId + '_' + title,
+      // Tags associated with the meeting. They can be used in cost allocation console
+      Tags: [
+        { Key: 'CreatedByUser', Value: externalUserId},
+        { Key: 'MeetingId', Value: title},
+      ]
     };
     console.info('Creating new meeting: ' + JSON.stringify(request));
     meetingInfo = await chime.createMeeting(request).promise();
@@ -150,6 +157,8 @@ exports.create = async(event, context, callback) => {
   // Look up the meeting by its title. If it does not exist, create the meeting.
   let meeting = await getMeeting(query.title);
   if (!meeting) {
+    const externalUserId = query.externalUserId || 'NO_EXTERNAL_USER_ID';
+
     const request = {
       // Use a UUID for the client request token to ensure that any request retries
       // do not create multiple meetings.
@@ -162,12 +171,13 @@ exports.create = async(event, context, callback) => {
       // Set up SQS notifications if being used
       NotificationsConfiguration: getNotificationsConfig(),
 
-      //ExternalMeetingId: query.title,
+      ExternalMeetingId: externalUserId + '_' + query.title,
 
       // Tags associated with the meeting. They can be used in cost allocation console
-/*        Tags: [
-        { Key: 'invitationCode', Value: query.title},
-      ] */
+      Tags: [
+        { Key: 'CreatedByUser', Value: externalUserId},
+        { Key: 'MeetingId', Value: query.title},
+      ]
     };
 
     console.info('Creating new meeting: ' + JSON.stringify(request));
@@ -200,6 +210,7 @@ exports.join = async (event, context, callback) => {
   const title = event.queryStringParameters.title;
   const name = event.queryStringParameters.name;
   const region = event.queryStringParameters.region || 'us-east-1';
+  const externalUserId = event.queryStringParameters.externalUserId || 'NO_EXTERNAL_USER_ID';
 
   if (!title || !name) {
     response["statusCode"] = 400;
@@ -214,6 +225,12 @@ exports.join = async (event, context, callback) => {
       ClientRequestToken: uuid(),
       MediaRegion: region,
       NotificationsConfiguration: getNotificationsConfig(),
+      ExternalMeetingId: externalUserId + '_' + title,
+      // Tags associated with the meeting. They can be used in cost allocation console
+      Tags: [
+        { Key: 'CreatedByUser', Value: externalUserId},
+        { Key: 'MeetingId', Value: title},
+      ]
     };
     console.info('Creating new meeting before joining: ' + JSON.stringify(request));
     meetingInfo = await chime.createMeeting(request).promise();

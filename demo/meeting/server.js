@@ -57,6 +57,7 @@ const server = require(protocol).createServer(
       ) {
         const query = url.parse(request.url, true).query;
         const title = query.title;
+        const externalUserId = query.externalUserId || 'NO_EXTERNAL_USER_ID';
         const name = query.name;
         const region = query.region || 'us-east-1';
 
@@ -64,7 +65,13 @@ const server = require(protocol).createServer(
           meetingCache[title] = await chime
             .createMeeting({
               ClientRequestToken: uuid(),
-              MediaRegion: region
+              MediaRegion: region,
+              ExternalMeetingId: externalUserId + '_' + title,
+              // Tags associated with the meeting. They can be used in cost allocation console
+              Tags: [
+                { Key: 'CreatedByUser', Value: externalUserId },
+                { Key: 'MeetingId', Value: title },
+              ]
             })
             .promise();
           attendeeCache[title] = {};
@@ -111,10 +118,17 @@ const server = require(protocol).createServer(
       ) {
         const query = url.parse(request.url, true).query;
         const title = query.title;
+        const externalUserId = query.externalUserId || 'NO_EXTERNAL_USER_ID'
         if (!meetingCache[title]) {
           meetingCache[title] = await chime
             .createMeeting({
-              ClientRequestToken: uuid()
+              ClientRequestToken: uuid(),
+              ExternalMeetingId: externalUserId + '_' + title,
+              // Tags associated with the meeting. They can be used in cost allocation console
+              Tags: [
+                { Key: 'CreatedByUser', Value: externalUserId },
+                { Key: 'MeetingId', Value: title },
+              ]
               // NotificationsConfiguration: {
               //   SqsQueueArn: 'Paste your arn here',
               //   SnsTopicArn: 'Paste your arn here'
@@ -141,6 +155,8 @@ const server = require(protocol).createServer(
   
         // Look up the meeting by its title. If it does not exist, create the meeting.
         if (!meetingTable[requestUrl.query.title]) {
+          const externalUserId = requestUrl.query.externalUserId || 'NO_EXTERNAL_USER_ID';
+
           meetingTable[requestUrl.query.title] = await chime.createMeeting({
             // Use a UUID for the client request token to ensure that any request retries
             // do not create multiple meetings.
@@ -150,7 +166,12 @@ const server = require(protocol).createServer(
             MediaRegion: requestUrl.query.region,
             // Any meeting ID you wish to associate with the meeting.
             // For simplicity here, we use the meeting title.
-            ExternalMeetingId: requestUrl.query.title.substring(0, 64),
+            ExternalMeetingId: externalUserId + '_' + requestUrl.query.title,
+            // Tags associated with the meeting. They can be used in cost allocation console
+            Tags: [
+              { Key: 'CreatedByUser', Value: externalUserId },
+              { Key: 'MeetingId', Value: requestUrl.query.title },
+            ]
           }).promise();
         }
   
