@@ -26,7 +26,7 @@ export const LocalVideo: React.FC<Props> = ({ nameplate, ...rest }) => {
   const videoEl = useRef<HTMLVideoElement>(null);
   useApplyVideoObjectFit(videoEl);
   const [active, setActive] = useState(() =>
-    audioVideo?.hasStartedLocalVideoTile()
+    audioVideo?.hasStartedLocalVideoTile()|| false
   );
 
   useEffect(() => {
@@ -62,6 +62,8 @@ export const LocalVideo: React.FC<Props> = ({ nameplate, ...rest }) => {
 
         if (tileState.active !== active) {
           setActive(tileState.active);
+        } else if (tileState.localTileStarted && !tileState.active) {
+          setActive(true);
         }
       }
     };
