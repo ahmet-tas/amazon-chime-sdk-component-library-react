@@ -10,11 +10,13 @@ type Props = {
     children: ReactNode;
 };
 
-type DataMessageType = "CHAT" 
+type DataMessageType = "CHAT";
 
 export interface RealitimeSubscribeChatStateValue {
-    chatData: RealtimeData[]
-    sendChatData: (mess: string) => void
+  chatData: RealtimeData[];
+  sendChatData: (mess: string) => void;
+  hasUnReadMessages: boolean;
+  setHasUnReadMessages: (value: boolean) => void;
 }
 
 const RealitimeSubscribeChatStateContext = React.createContext<RealitimeSubscribeChatStateValue | null>(null)
@@ -32,6 +34,7 @@ export const RealitimeSubscribeChatStateProvider = ({ children }: Props) => {
     const audioVideo = useAudioVideo()
     const { localUserName } = useAppState()
     const [chatData, setChatData] = useState([] as RealtimeData[])
+    const [hasUnReadMessages, setHasUnReadMessages] = useState(false);
 
     const sendChatData = (text: string) => {
         const mess: RealtimeData = {
@@ -52,6 +55,7 @@ export const RealitimeSubscribeChatStateProvider = ({ children }: Props) => {
         const data = JSON.parse(mess.text()) as RealtimeData
         // data.senderId = senderId
         setChatData([...chatData, data])
+        setHasUnReadMessages(true);
     }
 
     useEffect(() => {
@@ -67,6 +71,8 @@ export const RealitimeSubscribeChatStateProvider = ({ children }: Props) => {
     const providerValue = {
         chatData,
         sendChatData,
+        hasUnReadMessages,
+        setHasUnReadMessages
     }
     return (
         <RealitimeSubscribeChatStateContext.Provider value={providerValue}>

@@ -14,6 +14,7 @@ export interface SvgProps extends React.SVGAttributes<HTMLOrSVGElement> {
   height?: string;
   /** The title of a SVG component. */
   title?: string;
+  unReadIcon?:boolean;
 }
 
 const Svg: React.FC<SvgProps> = ({
