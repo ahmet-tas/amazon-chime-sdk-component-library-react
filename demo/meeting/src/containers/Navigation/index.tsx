@@ -23,6 +23,7 @@ const Navigation: React.FC<any> = () => {
     closeNavbar,
     toggleChat,
     showChat,
+    showRoster,
   } = useNavigation();
   // const { theme } = useAppState();
   const {
@@ -31,8 +32,18 @@ const Navigation: React.FC<any> = () => {
   } = useRealitimeSubscribeChatState();
 
   const toggleChatList = (): void => {
+    if (showRoster) {
+      toggleRoster();
+    }
     setHasUnReadMessages(false);
     toggleChat();
+  };
+
+  const toggleAttendeeList = (): void => {
+    if (showChat) {
+      toggleChat();
+    }
+    toggleRoster();
   };
 
   return (
@@ -45,7 +56,7 @@ const Navigation: React.FC<any> = () => {
       />
       <NavbarItem
         icon={<Attendees />}
-        onClick={toggleRoster}
+        onClick={toggleAttendeeList}
         label="Attendees"
       />
       <NavbarItem
